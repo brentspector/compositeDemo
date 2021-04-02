@@ -16,6 +16,8 @@ public class App
         SettingsOptionFactory.setSettingsList(settings);
         SettingsOptionComposite soc1 = SettingsOptionFactory.createSettingsOption(false);
         SettingsOptionComposite soc2 = SettingsOptionFactory.createSettingsOption(false, new PredicatePair(soc1, PredicatePair.BOOLEAN_TRUE));
+        SettingsOptionComposite soc3 = SettingsOptionFactory.createSettingsOption(true, new PredicatePair(soc2, PredicatePair.BOOLEAN_TRUE));
+        //SettingsOptionComposite soc4 = SettingsOptionFactory.createSettingsOption(1);
         for(int i = 0; i < 2; i++) {
             System.out.println("\n====== " + i + " ========\n");
             settings.stream().filter(SettingsOption::isParent).forEach((option) -> {
@@ -134,12 +136,13 @@ class SettingsOptionComposite<T> implements SettingsOption<T> {
     @Override
     public void attemptRandomValue(Random random, SettingsOption item) {
         value.attemptRandomValue(random, item);
+        childOptions.forEach((option) -> option.attemptRandomValue(random, this));
     }
 
     @Override
     public void listAllItems() {
         System.out.println(value.getItem());
-        childOptions.forEach((option) -> System.out.println(option.getItem()));
+        childOptions.forEach((option) -> option.listAllItems());
     }
 
     public void add(SettingsOption childOption) {
@@ -218,7 +221,7 @@ class SettingsOptionFactory {
 
     private static SettingsOptionComposite createComposite(Object value, PredicatePair matches) {
         if (value instanceof Boolean) {
-            return new SettingsOptionComposite(new BooleanSettingsOption((Boolean)value, matches));
+            return new SettingsOptionComposite<Boolean>(new BooleanSettingsOption((Boolean)value, matches));
         } else {
             throw new RuntimeException(value.getClass() + " has no supported factory.");
         }
